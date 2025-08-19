@@ -25,52 +25,52 @@ jobs:
 
       - name: Install dependencies - wrk-base
         run: |
-          cd wrk-base
+          cd wrk-base/wrk-base
           npm install
 
       - name: Install dependencies - tpl-wrk-thing
         run: |
-          cd tpl-wrk-thing
+          cd wrk-base/tpl-wrk-thing
           npm install
 
       - name: Install dependencies - app-node
         run: |
-          cd app-node
+          cd wrk-base/app-node
           npm install
 
       - name: Install dependencies - wrk-ork
         run: |
-          cd wrk-ork
+          cd wrk-base/wrk-ork
           npm install
 
       - name: Install dependencies - wrk-book
         run: |
-          cd wrk-book
+          cd wrk-base/wrk-book
           npm install
 
       - name: Lint - wrk-base
         run: |
-          cd wrk-base
+          cd wrk-base/wrk-base
           npm run lint
 
       - name: Lint - tpl-wrk-thing
         run: |
-          cd tpl-wrk-thing
+          cd wrk-base/tpl-wrk-thing
           npm run lint
 
       - name: Lint - app-node
         run: |
-          cd app-node
+          cd wrk-base/app-node
           npm run lint
 
       - name: Lint - wrk-ork
         run: |
-          cd wrk-ork
+          cd wrk-base/wrk-ork
           npm run lint
 
       - name: Lint - wrk-book
         run: |
-          cd wrk-book
+          cd wrk-base/wrk-book
           npm run lint
 
   build-and-push:
@@ -120,8 +120,8 @@ jobs:
       - name: Build and push Docker image
         uses: docker/build-push-action@v5
         with:
-          context: .
-          file: ./Dockerfile.${{ matrix.service }}
+          context: ./wrk-base
+          file: ./wrk-base/Dockerfile.${{ matrix.service }}
           push: true
           tags: ${{ steps.meta.outputs.tags }}
           platforms: linux/amd64,linux/arm64
