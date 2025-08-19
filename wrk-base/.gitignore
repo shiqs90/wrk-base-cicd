@@ -1,0 +1,87 @@
+# Node.js
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+package-lock.json
+yarn.lock
+
+# Logs
+logs
+*.log
+lerna-debug.log*
+.pnpm-debug.log*
+
+# Runtime data
+pids
+*.pid
+*.seed
+*.pid.lock
+
+# Coverage directory
+coverage
+*.lcov
+.nyc_output
+
+# Environment variables
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+
+# Configuration files (keep examples, ignore actual configs)
+config/*.json
+!config/*.json.example
+facs/*.json
+!facs/*.json.example
+
+# Database files
+db/*.db
+db/*.sqlite
+db/*.sqlite3
+
+# OS generated files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# IDE and Editor files
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.project
+.settings/
+
+# Docker
+.docker
+
+# Temporary files
+tmp/
+temp/
+*.tmp
+*.temp
+
+# Build artifacts
+dist/
+build/
+
+# Test files
+test-results/
+coverage/
+
+# Monitoring data (if running locally)
+monitoring/data/
+prometheus_data/
+grafana_data/
+
+# Personal documents and files (from the assignment)
+screenshots/
+*.jpg
+*.png

@@ -1,0 +1,68 @@
+# Multi-stage build for app-node service
+FROM node:18-alpine AS builder
+
+# Install git for git-based dependencies
+RUN apk add --no-cache git
+
+# Set working directory
+WORKDIR /app
+
+# Copy all package.json files for dependency resolution
+COPY wrk-base/package*.json ./wrk-base/
+COPY tpl-wrk-thing/package*.json ./tpl-wrk-thing/
+COPY app-node/package*.json ./app-node/
+
+# Install dependencies for wrk-base first
+WORKDIR /app/wrk-base
+RUN npm install --only=production
+
+# Install dependencies for tpl-wrk-thing
+WORKDIR /app/tpl-wrk-thing
+RUN npm install --only=production
+
+# Install dependencies for app-node
+WORKDIR /app/app-node
+RUN npm install --only=production
+
+# Production stage
+FROM node:18-alpine AS production
+
+# Create non-root user
+RUN addgroup -g 1001 -S nodejs && \
+    adduser -S nodeuser -u 1001
+
+# Set working directory
+WORKDIR /app
+
+# Copy built dependencies and applications
+COPY --from=builder /app/wrk-base ./wrk-base/
+COPY --from=builder /app/tpl-wrk-thing ./tpl-wrk-thing/
+COPY --from=builder /app/app-node/node_modules ./app-node/node_modules/
+
+# Copy application code
+COPY wrk-base/ ./wrk-base/
+COPY tpl-wrk-thing/ ./tpl-wrk-thing/
+COPY app-node/ ./app-node/
+
+# Set working directory to app-node
+WORKDIR /app/app-node
+
+# Set up configuration
+RUN chmod +x ./setup-config.sh
+
+# Create directories and set ownership
+RUN mkdir -p config db && \
+    chown -R nodeuser:nodejs /app
+
+# Switch to non-root user
+USER nodeuser
+
+# Expose port
+EXPOSE 3000
+
+# Health check
+HEALTHCHECK --interval=30s --timeout=3s --start-period=5s --retries=3 \
+    CMD node -e "require('http').get('http://localhost:3000/health', (res) => process.exit(res.statusCode === 200 ? 0 : 1)).on('error', () => process.exit(1))"
+
+# Default command
+CMD ["node", "worker.js", "--wtype", "wrk-node-http", "--env", "production", "--port", "3000"]

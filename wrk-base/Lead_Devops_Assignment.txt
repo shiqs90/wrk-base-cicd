@@ -1,0 +1,43 @@
+Your task is to design a production-quality, comprehensive CI/CD and deployment plan for the provided codebase.
+Deliverables:
+1. Docker Images
+○ Write Dockerfiles that produce optimized builds for the services shared.
+○ Ensure they use build caching for quicker builds.
+2. GitHub Actions Pipelines
+○ Create pipelines that run tests and build the image on each push.
+○ Make sure to tag the builds based on the branch being tested and built
+■ main branch builds should be pushed as the latest Docker image
+■ dev branch builds should be tagged and pushed as development
+builds
+■ any other branch should be tagged as alpha builds with the commit
+hash
+3
+3. Docker Compose Stack
+○ Provide a docker-compose file that spins up the Docker containers, and also sets up a monitoring stack (Prometheus + Grafana)
+○ Implement and use a simple health-check for Prometheus 
+
+4. Documentation
+○ Architecture diagram of the services and pipeline.
+○ Write extensive documentation with information on prerequisites,
+dependencies and how to build and run the Docker images and
+docker-compose stack.
+○ Document strategies for versioning and rollbacks.
+○ Document how the GitHub Actions workflow is structured, including
+triggers, jobs, and publishing steps.
+○ Best practices or contribution guidelines.
+The codebase is attached to the mail, and contains the code and documentation on how to run the services.
+ 
+Submission Steps
+Once completed, please upload the repo on GitHub and share access with the hiring representative. Please also share an email regarding the same with a link to the repo(s) you have submitted.
+Best Practices
+Pipelines:
+● Follow DRY principles (Don’t Repeat Yourself) wherever possible to keep code structure modular and reusable.
+Documentation:
+● Use clear and concise language; do not add filler text to expand on the content.
+● Use code snippets and examples wherever possible.
+● Make sure to have uniform formatting across the documentation.
+● Use diagrams / visuals wherever possible to illustrate flows and concepts.
+Evaluation Criteria
+● Pipeline readability and structure.
+● Best practices for Docker containers.
+● Documentation quality (clear to read and understand).

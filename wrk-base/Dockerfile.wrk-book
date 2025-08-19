@@ -1,0 +1,65 @@
+# Multi-stage build for wrk-book service
+FROM node:18-alpine AS builder
+
+# Install git for git-based dependencies
+RUN apk add --no-cache git
+
+# Set working directory
+WORKDIR /app
+
+# Copy all package.json files for dependency resolution
+COPY wrk-base/package*.json ./wrk-base/
+COPY tpl-wrk-thing/package*.json ./tpl-wrk-thing/
+COPY wrk-book/package*.json ./wrk-book/
+
+# Install dependencies for wrk-base first
+WORKDIR /app/wrk-base
+RUN npm install --only=production
+
+# Install dependencies for tpl-wrk-thing (as per SETUP.md)
+WORKDIR /app/tpl-wrk-thing
+RUN npm install --only=production
+
+# Install dependencies for wrk-book
+WORKDIR /app/wrk-book
+RUN npm install --only=production
+
+# Production stage
+FROM node:18-alpine AS production
+
+# Create non-root user
+RUN addgroup -g 1001 -S nodejs && \
+    adduser -S nodeuser -u 1001
+
+# Set working directory
+WORKDIR /app
+
+# Copy built dependencies and applications
+COPY --from=builder /app/wrk-base ./wrk-base/
+COPY --from=builder /app/tpl-wrk-thing ./tpl-wrk-thing/
+COPY --from=builder /app/wrk-book/node_modules ./wrk-book/node_modules/
+
+# Copy application code
+COPY wrk-base/ ./wrk-base/
+COPY tpl-wrk-thing/ ./tpl-wrk-thing/
+COPY wrk-book/ ./wrk-book/
+
+# Set working directory to wrk-book
+WORKDIR /app/wrk-book
+
+# Set up configuration
+RUN chmod +x ./setup-config.sh
+
+# Create directories and set ownership
+RUN mkdir -p config && \
+    chown -R nodeuser:nodejs /app
+
+# Switch to non-root user
+USER nodeuser
+
+# Health check
+HEALTHCHECK --interval=30s --timeout=3s --start-period=5s --retries=3 \
+    CMD pgrep -f "node worker.js" > /dev/null || exit 1
+
+# Default command (requires rack parameter)
+CMD ["node", "worker.js", "--wtype", "wrk-book-rack", "--env", "development", "--debug", "true", "--rack", "default-rack-id"]
