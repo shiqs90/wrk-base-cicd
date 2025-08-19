@@ -59,7 +59,7 @@ const checkoutBookBody = {
           enum: ['available', 'checked-out']
         }
       }
-    },
+    }
   }
 }
 
