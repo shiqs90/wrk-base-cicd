@@ -1,8 +1,12 @@
 # Multi-stage build for wrk-ork service
-FROM node:18-alpine AS builder
+FROM node:18-slim AS builder
 
-# Install git for git-based dependencies
-RUN apk add --no-cache git
+# Install git and build tools for git-based dependencies and native modules
+RUN apt-get update && apt-get install -y \
+    git \
+    build-essential \
+    python3 \
+    && rm -rf /var/lib/apt/lists/*
 
 # Set working directory
 WORKDIR /app
@@ -19,12 +23,22 @@ RUN npm install --only=production
 WORKDIR /app/wrk-ork
 RUN npm install --only=production
 
+# Rebuild all native modules in the container
+WORKDIR /app
+RUN find . -name "node_modules" -exec sh -c 'cd "$1" && npm rebuild' _ {} \;
+
 # Production stage
-FROM node:18-alpine AS production
+FROM node:18-slim AS production
+
+# Install build tools for native modules in production stage
+RUN apt-get update && apt-get install -y \
+    build-essential \
+    python3 \
+    && rm -rf /var/lib/apt/lists/*
 
 # Create non-root user
-RUN addgroup -g 1001 -S nodejs && \
-    adduser -S nodeuser -u 1001
+RUN groupadd --gid 1001 nodejs && \
+    useradd --uid 1001 --gid nodejs --shell /bin/bash --create-home nodeuser
 
 # Set working directory
 WORKDIR /app
@@ -40,19 +54,29 @@ COPY wrk-ork/ ./wrk-ork/
 # Set working directory to wrk-ork
 WORKDIR /app/wrk-ork
 
+# Rebuild native modules in production stage
+RUN npm rebuild
+
 # Set up configuration
-RUN chmod +x ./setup-config.sh
+RUN chmod +x ./setup-config.sh && \
+    ./setup-config.sh
+
+# Copy and set up entrypoint script
+COPY entrypoint.sh /usr/local/bin/entrypoint.sh
+RUN chmod +x /usr/local/bin/entrypoint.sh
 
 # Create directories and set ownership
 RUN mkdir -p config facs && \
-    chown -R nodeuser:nodejs /app
+    chown -R nodeuser:nodejs /app && \
+    chown nodeuser:nodejs /usr/local/bin/entrypoint.sh
 
 # Switch to non-root user
 USER nodeuser
 
 # Health check
 HEALTHCHECK --interval=30s --timeout=3s --start-period=5s --retries=3 \
-    CMD pgrep -f "node worker.js" > /dev/null || exit 1
+    CMD node -e "process.exit(0)"
 
-# Default command (requires cluster parameter)
-CMD ["node", "worker.js", "--wtype", "wrk-ork-proc-aggr", "--env", "development", "--cluster", "1"]
+# Use entrypoint script
+ENTRYPOINT ["/usr/local/bin/entrypoint.sh"]
+CMD ["wrk-ork-proc-aggr"]

@@ -41,7 +41,10 @@ class WrkNodeHttp extends WrkBase {
       ['fac', 'bfx-facs-lru', '15m', '15m', { max: 10000, maxAge: 60000 * 15 }],
       ['fac', 'bfx-facs-http', 'c0', 'c0', { timeout: 30000, debug: false }, 1],
       ['fac', 'svc-facs-httpd', 'h0', 'h0', {
-        port: this.ctx.port,
+        listen: {
+          port: this.ctx.port,
+          host: process.env.HOST || '0.0.0.0'
+        },
         logger: true,
         addDefaultRoutes: true,
         trustProxy: true

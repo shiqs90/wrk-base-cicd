@@ -1,8 +1,10 @@
 Your task is to design a production-quality, comprehensive CI/CD and deployment plan for the provided codebase.
 Deliverables:
+
 1. Docker Images
 ○ Write Dockerfiles that produce optimized builds for the services shared.
 ○ Ensure they use build caching for quicker builds.
+
 2. GitHub Actions Pipelines
 ○ Create pipelines that run tests and build the image on each push.
 ○ Make sure to tag the builds based on the branch being tested and built
@@ -11,7 +13,7 @@ Deliverables:
 builds
 ■ any other branch should be tagged as alpha builds with the commit
 hash
-3
+
 3. Docker Compose Stack
 ○ Provide a docker-compose file that spins up the Docker containers, and also sets up a monitoring stack (Prometheus + Grafana)
 ○ Implement and use a simple health-check for Prometheus 

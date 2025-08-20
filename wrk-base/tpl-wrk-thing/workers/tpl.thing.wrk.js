@@ -1,7 +1,7 @@
 'use strict'
 
 const async = require('async')
-const WrkBase = require('tether-wrk-base/workers/base.wrk.tether')
+const WrkBase = require('wrk-base/workers/base.wrk')
 const crypto = require('crypto')
 const utilsStore = require('hp-svc-facs-store/utils')
 const lWrkFunLogs = require('./lib/wrk-fun-logs')
@@ -71,18 +71,7 @@ class WrkTplThing extends WrkBase {
 
     this.setInitFacs([
       ['fac', 'bfx-facs-interval', '0', '0', {}, 0],
-      ['fac', 'bfx-facs-scheduler', '0', '0', {}, 0],
-      [
-        'fac',
-        'hp-svc-facs-store',
-        's1',
-        's1',
-        {
-          storePrimaryKey: this.ctx.storePrimaryKey,
-          storeDir: `store/${this.ctx.rack}-data`
-        },
-        1
-      ]
+      ['fac', 'bfx-facs-scheduler', '0', '0', {}, 0]
     ])
 
     this.mem = {
@@ -629,12 +618,12 @@ class WrkTplThing extends WrkBase {
         async () => {
           const rpcServer = this.net_r0.rpcServer
 
-          this.things = await this.store_s1.getBee(
+          this.things = await this.store_s0.getBee(
             { name: 'things' },
             { keyEncoding: 'utf-8', valueEncoding: 'json' }
           )
 
-          this.meta_logs = await this.store_s1.getBee(
+          this.meta_logs = await this.store_s0.getBee(
             { name: 'meta_logs_00' },
             { keyEncoding: 'utf-8', valueEncoding: 'json' }
           )
@@ -670,8 +659,8 @@ class WrkTplThing extends WrkBase {
           thingConf.collectSnapTimeoutMs = thingConf.collectSnapTimeoutMs || 120000
 
           this.status.rpcPublicKey = this.getRpcKey().toString('hex')
-          this.status.storeS1PrimaryKey =
-            this.store_s1.store.primaryKey.toString('hex')
+          this.status.storeS0PrimaryKey =
+            this.store_s0.store.primaryKey.toString('hex')
 
           this.saveStatus()
         },

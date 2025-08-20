@@ -182,6 +182,17 @@ function routes (ctx) {
   return [
     {
       method: 'GET',
+      url: '/health',
+      handler: async (req, rep) => {
+        send200(rep, { 
+          status: 'healthy', 
+          timestamp: Date.now(),
+          service: 'app-node'
+        })
+      }
+    },
+    {
+      method: 'GET',
       url: '/books',
       handler: async (req, rep) => {
         send200(

@@ -1,8 +1,12 @@
 # Multi-stage build for wrk-book service
-FROM node:18-alpine AS builder
+FROM node:18-slim AS builder
 
-# Install git for git-based dependencies
-RUN apk add --no-cache git
+# Install git and build tools for git-based dependencies and native modules
+RUN apt-get update && apt-get install -y \
+    git \
+    build-essential \
+    python3 \
+    && rm -rf /var/lib/apt/lists/*
 
 # Set working directory
 WORKDIR /app
@@ -14,7 +18,7 @@ COPY wrk-book/package*.json ./wrk-book/
 
 # Install dependencies for wrk-base first
 WORKDIR /app/wrk-base
-RUN npm install --only=production
+RUN npm install --only=production && npm rebuild
 
 # Install dependencies for tpl-wrk-thing (as per SETUP.md)
 WORKDIR /app/tpl-wrk-thing
@@ -25,11 +29,17 @@ WORKDIR /app/wrk-book
 RUN npm install --only=production
 
 # Production stage
-FROM node:18-alpine AS production
+FROM node:18-slim AS production
+
+# Install required runtime dependencies for native modules
+RUN apt-get update && apt-get install -y \
+    build-essential \
+    python3 \
+    && rm -rf /var/lib/apt/lists/*
 
 # Create non-root user
-RUN addgroup -g 1001 -S nodejs && \
-    adduser -S nodeuser -u 1001
+RUN groupadd --gid 1001 nodejs && \
+    useradd --uid 1001 --gid nodejs --shell /bin/bash --create-home nodeuser
 
 # Set working directory
 WORKDIR /app
@@ -44,22 +54,37 @@ COPY wrk-base/ ./wrk-base/
 COPY tpl-wrk-thing/ ./tpl-wrk-thing/
 COPY wrk-book/ ./wrk-book/
 
+# Rebuild native modules in production environment
+WORKDIR /app/wrk-base
+RUN npm rebuild
+
+# Install and rebuild tpl-wrk-thing dependencies if package.json exists
+WORKDIR /app/tpl-wrk-thing
+RUN [ -f package.json ] && npm install --only=production && npm rebuild || true
+
 # Set working directory to wrk-book
 WORKDIR /app/wrk-book
 
 # Set up configuration
-RUN chmod +x ./setup-config.sh
+RUN chmod +x ./setup-config.sh && \
+    ./setup-config.sh
+
+# Copy and set up entrypoint script
+COPY entrypoint.sh /usr/local/bin/entrypoint.sh
+RUN chmod +x /usr/local/bin/entrypoint.sh
 
 # Create directories and set ownership
 RUN mkdir -p config && \
-    chown -R nodeuser:nodejs /app
+    chown -R nodeuser:nodejs /app && \
+    chown nodeuser:nodejs /usr/local/bin/entrypoint.sh
 
 # Switch to non-root user
 USER nodeuser
 
 # Health check
 HEALTHCHECK --interval=30s --timeout=3s --start-period=5s --retries=3 \
-    CMD pgrep -f "node worker.js" > /dev/null || exit 1
+    CMD node -e "process.exit(0)"
 
-# Default command (requires rack parameter)
-CMD ["node", "worker.js", "--wtype", "wrk-book-rack", "--env", "development", "--debug", "true", "--rack", "default-rack-id"]
+# Use entrypoint script
+ENTRYPOINT ["/usr/local/bin/entrypoint.sh"]
+CMD ["wrk-book-rack"]

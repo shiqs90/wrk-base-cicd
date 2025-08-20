@@ -8,7 +8,10 @@
 4. Then, begin working on the todo items, marking them as complete as you go.
 5. Please every step of the way just give me a high level explanation of what changes you made
 6. Make every task and code change you do as simple as possible. We want to avoid making any massive or complex changes. Every change should impact as little code as possible. Everything is about simplicity.
-7. Finally, add a review section to the todo.md file with a summary of the changes you made and any other relevant information.
+7. Make sure to test each Implementation Phase, before moving to next Phase.
+8. Never compromise/change the existing functionality or capabilities of the app, in the pursuit to complete your tasks.
+9. Always tell me what you are trying to achieve before attempting to make any changes
+10. Finally, add a review section to the todo.md file with a summary of the changes you made and any other relevant information.
 
 ---
 
@@ -39,9 +42,9 @@ The system consists of 5 Node.js services:
 - [ ] Add linting step for all services
 - [ ] Add Docker build step for each service
 - [ ] Configure branch-based tagging strategy:
-  - main ’ latest
-  - dev ’ development
-  - others ’ alpha-{commit-hash}
+  - main ï¿½ latest
+  - dev ï¿½ development
+  - others ï¿½ alpha-{commit-hash}
 - [ ] Add Docker registry push steps
 - [ ] Test pipeline with sample commits
 

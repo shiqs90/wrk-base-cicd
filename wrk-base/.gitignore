@@ -85,3 +85,6 @@ grafana_data/
 screenshots/
 *.jpg
 *.png
+
+Claude related files
+Claude.MD
