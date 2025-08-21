@@ -15,9 +15,12 @@ WORKDIR /app
 COPY wrk-base/package*.json ./wrk-base/
 COPY wrk-ork/package*.json ./wrk-ork/
 
-# Install dependencies for wrk-base first
+# Install dependencies for wrk-base first (with network resilience for git deps)
 WORKDIR /app/wrk-base
-RUN npm install --only=production
+RUN npm config set fetch-timeout 600000 && \
+    npm config set fetch-retry-mintimeout 20000 && \
+    npm config set fetch-retry-maxtimeout 120000 && \
+    npm install --only=production
 
 # Install dependencies for wrk-ork
 WORKDIR /app/wrk-ork

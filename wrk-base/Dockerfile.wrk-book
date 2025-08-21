@@ -16,9 +16,12 @@ COPY wrk-base/package*.json ./wrk-base/
 COPY tpl-wrk-thing/package*.json ./tpl-wrk-thing/
 COPY wrk-book/package*.json ./wrk-book/
 
-# Install dependencies for wrk-base first
+# Install dependencies for wrk-base first (with network resilience)
 WORKDIR /app/wrk-base
-RUN npm install --only=production && npm rebuild
+RUN npm config set fetch-timeout 600000 && \
+    npm config set fetch-retry-mintimeout 20000 && \
+    npm config set fetch-retry-maxtimeout 120000 && \
+    npm install --only=production && npm rebuild
 
 # Install dependencies for tpl-wrk-thing (as per SETUP.md)
 WORKDIR /app/tpl-wrk-thing
