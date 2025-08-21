@@ -184,8 +184,8 @@ function routes (ctx) {
       method: 'GET',
       url: '/health',
       handler: async (req, rep) => {
-        send200(rep, { 
-          status: 'healthy', 
+        send200(rep, {
+          status: 'healthy',
           timestamp: Date.now(),
           service: 'app-node'
         })
